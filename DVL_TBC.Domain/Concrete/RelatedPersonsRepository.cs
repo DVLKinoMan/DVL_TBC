@@ -77,7 +77,7 @@ namespace DVL_TBC.Domain.Concrete
                         gr.Key.privateNumber,
                         fullName: $"{gr.Key.firstName} {gr.Key.lastName}",
                         gr.Key.connectionType,
-                        gr.Count()
+                        gr.Sum(g => g.count)
                     ))
                 .OrderBy(p => p.fullName)
                 .ToList();

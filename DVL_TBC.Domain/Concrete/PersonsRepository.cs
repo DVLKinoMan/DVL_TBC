@@ -50,8 +50,9 @@ namespace DVL_TBC.Domain.Concrete
         {
             await _context.Persons.AddAsync(person);
 
-            await _context.RelatedPersons.AddRangeAsync(person.RelatedPersons.Select(rp => new RelatedPerson()
-                {ConnectionType = rp.ConnectionType, Person1 = person, RelatedPersonId = rp.RelatedPersonId}));
+            if (person.RelatedPersons is { } relPer)
+                await _context.RelatedPersons.AddRangeAsync(relPer.Select(rp => new RelatedPerson()
+                    {ConnectionType = rp.ConnectionType, Person1 = person, RelatedPersonId = rp.RelatedPersonId}));
 
             await _context.SaveChangesAsync();
         }
