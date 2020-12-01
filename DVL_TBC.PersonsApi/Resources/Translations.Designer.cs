@@ -106,6 +106,24 @@ namespace DVL_TBC.PersonsApi.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Parameter &apos;{0}&apos; length should be in range [{1},{2]].
+        /// </summary>
+        public static string ErrorParameterLengthRange {
+            get {
+                return ResourceManager.GetString("ErrorParameterLengthRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Phone number length should be between 4 and 50.
+        /// </summary>
+        public static string ErrorPhoneNumberRange {
+            get {
+                return ResourceManager.GetString("ErrorPhoneNumberRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Private number length should be equal to {0}.
         /// </summary>
         public static string ErrorPrivateNumberLength {

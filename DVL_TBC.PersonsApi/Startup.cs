@@ -34,6 +34,7 @@ namespace DVL_TBC.PersonsApi
 
             services.AddScoped<IPersonsRepository, PersonsRepository>();
             services.AddScoped<IRelatedPersonsRepository, RelatedPersonsRepository>();
+            services.AddScoped<IPhonesRepository, PhonesRepository>();
 
             services.AddSwaggerGen();
         }

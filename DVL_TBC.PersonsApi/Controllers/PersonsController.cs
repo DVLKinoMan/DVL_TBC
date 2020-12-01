@@ -33,10 +33,15 @@ namespace DVL_TBC.PersonsApi.Controllers
                 .Split(',', StringSplitOptions.RemoveEmptyEntries).Select(c => c.Trim()).ToArray();
         }
 
+        /// <summary>
+        /// Getting person with details by personId
+        /// </summary>
+        /// <param name="personId"></param>
+        /// <returns></returns>
         [HttpGet("Get/{personId}")]
         public async Task<ActionResult<GetPersonResponse>> GetPersonAsync(int personId)
         {
-            var person = _personsRepo.Get(personId).ToGetPersonResponse();
+            var person = (await _personsRepo.GetAsync(personId)).ToGetPersonResponse();
 
             if (person.ProfilePictureRelativePath is { } path)
                 person.ProfilePicture = await System.IO.File.ReadAllBytesAsync(Path.Combine(_profilePicturesFolderPath, path));
@@ -44,50 +49,96 @@ namespace DVL_TBC.PersonsApi.Controllers
             return Ok(person);
         }
 
+        /// <summary>
+        /// Getting list of persons with filters and paging
+        /// </summary>
+        /// <param name="firstName">Person with firstName substring in FirstName</param>
+        /// <param name="lastName">Person with lastName substring in LastName</param>
+        /// <param name="privateNumber">Person with privateNumber substring in PrivateNumber</param>
+        /// <param name="itemsPerPage">Parameter for paging</param>
+        /// <param name="currentPageNumber">Parameter for paging</param>
+        /// <returns></returns>
         [HttpGet("List")]
-        public ActionResult<List<GeneralPersonResponse>> ListPersons(string? firstName, string? lastName,
+        public async Task<ActionResult<List<GeneralPersonResponse>>> ListPersonsAsync(string? firstName, string? lastName,
             string? privateNumber, int? itemsPerPage, int? currentPageNumber)
-            => Ok(_personsRepo.List(firstName, lastName, privateNumber,
-                itemsPerPage, currentPageNumber).ToGeneralPersonResponses());
+            => Ok((await _personsRepo.ListAsync(firstName, lastName, privateNumber,
+                itemsPerPage, currentPageNumber)).ToGeneralPersonResponses());
 
+        /// <summary>
+        /// Person's ListAsync with many filters
+        /// </summary>
+        /// <param name="firstName"></param>
+        /// <param name="lastName"></param>
+        /// <param name="privateNumber"></param>
+        /// <param name="id"></param>
+        /// <param name="gender"></param>
+        /// <param name="birthDate"></param>
+        /// <param name="cityId"></param>
+        /// <param name="cityName"></param>
+        /// <param name="profilePictureRelativePath"></param>
+        /// <param name="itemsPerPage">Parameter for paging</param>
+        /// <param name="currentPageNumber">Parameter for paging</param>
+        /// <returns></returns>
         [HttpGet("ListWithManyFilters")]
-        public ActionResult<List<GeneralPersonResponse>> ListPersons(string? firstName, string? lastName, string? privateNumber,
+        public async Task<ActionResult<List<GeneralPersonResponse>>> ListPersonsAsync(string? firstName, string? lastName, string? privateNumber,
             int? id, Gender? gender, DateTime? birthDate, int? cityId, string? cityName,
             string? profilePictureRelativePath,
             int? itemsPerPage, int? currentPageNumber)
-            => Ok(_personsRepo.List(firstName, lastName, privateNumber,
+            => Ok((await _personsRepo.ListAsync(firstName, lastName, privateNumber,
                 id, gender, birthDate, cityId, cityName, profilePictureRelativePath,
-                itemsPerPage, currentPageNumber).ToGeneralPersonResponses());
+                itemsPerPage, currentPageNumber)).ToGeneralPersonResponses());
 
+        /// <summary>
+        /// Adding Person in Database
+        /// </summary>
+        /// <param name="addPersonRequest"></param>
+        /// <returns></returns>
         [HttpPost("Add")]
-        public IActionResult AddPerson(AddPersonRequest addPersonRequest)
+        public async Task<IActionResult> AddPersonAsync(AddPersonRequest addPersonRequest)
         {
-            _personsRepo.Add(addPersonRequest.ToPerson());
+            await _personsRepo.AddAsync(addPersonRequest.ToPerson());
             return Ok();
         }
 
+        /// <summary>
+        /// DeleteAsync Person from database with personId
+        /// </summary>
+        /// <param name="personId"></param>
+        /// <returns></returns>
         [HttpPost("Delete/{personId}")]
-        public IActionResult DeletePerson(int personId)
+        public async Task<IActionResult> DeletePersonAsync(int personId)
         {
-            _personsRepo.Delete(personId);
+            await _personsRepo.DeleteAsync(personId);
             return Ok();
         }
 
+        /// <summary>
+        /// EditAsync Person with personId
+        /// </summary>
+        /// <param name="personId"></param>
+        /// <param name="editPersonRequest">If Parameter values are null Person's parameter will not be updated</param>
+        /// <returns></returns>
         [HttpPost("Edit/{personId}")]
-        public IActionResult EditPerson(int personId, EditPersonRequest editPersonRequest)
+        public async Task<IActionResult> EditPersonAsync(int personId, EditPersonRequest editPersonRequest)
         {
-            //todo check if parameters are valid
-            _personsRepo.Edit(personId, editPersonRequest.FirstName, editPersonRequest.LastName,
+            await _personsRepo.EditAsync(personId, editPersonRequest.FirstName, editPersonRequest.LastName,
                 editPersonRequest.Gender, editPersonRequest.PrivateNumber, editPersonRequest.BirthDate,
-                editPersonRequest.CityId, editPersonRequest.PhoneNumbers);
+                editPersonRequest.CityId, editPersonRequest.PhoneNumbers?.ToPhoneNumbers().ToList());
             return Ok();
         }
 
+        /// <summary>
+        /// Uploading profilePicture for person (it will be saved in directory which is declared in appSettings)
+        /// </summary>
+        /// <param name="personId"></param>
+        /// <param name="image"></param>
+        /// <returns></returns>
         [HttpPost("Upload/ProfilePicture/{personId}")]
-        public async Task<ActionResult> EditProfilePicture(int personId, IFormFile image)
+        public async Task<ActionResult> EditProfilePictureAsync(int personId, IFormFile image)
         {
             if (!Directory.Exists(_profilePicturesFolderPath))
-                throw new DirectoryNotFoundException(string.Format(Translations.ErrorDirectoryNotFound, _profilePicturesFolderPath));
+                throw new DirectoryNotFoundException(string.Format(Translations.ErrorDirectoryNotFound,
+                    _profilePicturesFolderPath));
             if (!_profilePictureAllowedContentTypes.Contains(image.ContentType))
                 throw new ArgumentException(Translations.ErrorFileContentTypeNotValid, nameof(image));
 
@@ -100,7 +151,7 @@ namespace DVL_TBC.PersonsApi.Controllers
 
                 await System.IO.File.WriteAllBytesAsync(filePath, stream.ToArray());
 
-                _personsRepo.ChangeProfilePicture(personId, image.FileName);
+                await _personsRepo.ChangeProfilePictureAsync(personId, image.FileName);
             }
             catch
             {

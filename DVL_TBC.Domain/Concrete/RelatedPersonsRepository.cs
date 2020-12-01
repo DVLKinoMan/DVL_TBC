@@ -3,6 +3,8 @@ using DVL_TBC.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace DVL_TBC.Domain.Concrete
 {
@@ -15,15 +17,15 @@ namespace DVL_TBC.Domain.Concrete
             _context = context;
         }
 
-        public void Add(RelatedPerson relatedPerson)
+        public async Task AddAsync(RelatedPerson relatedPerson)
         {
             _context.RelatedPersons.Add(relatedPerson);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Delete(int personId, int relatedPersonId)
+        public async Task DeleteAsync(int personId, int relatedPersonId)
         {
-            var relatedPerson = _context.RelatedPersons.FirstOrDefault(rp =>
+            var relatedPerson = await _context.RelatedPersons.FirstOrDefaultAsync(rp =>
                     (rp.PersonId == personId && rp.RelatedPersonId == relatedPersonId) ||
                     (rp.PersonId == relatedPersonId && rp.RelatedPersonId == personId)) switch
                 {
@@ -33,13 +35,13 @@ namespace DVL_TBC.Domain.Concrete
                 };
 
             _context.RelatedPersons.Remove(relatedPerson);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public List<(string privateNumber, string fullName, PersonConnectionType connectionType, int relatedPersonsCount
-            )> GetRelatedPersonsCount()
+        public async Task<List<(string privateNumber, string fullName, PersonConnectionType connectionType, int relatedPersonsCount
+            )>> GetRelatedPersonsCountAsync()
         {
-            var groupedWithPersonId = (from p in _context.Persons
+            var groupedWithPersonId = await (from p in _context.Persons
                 join rp in _context.RelatedPersons on p.Id equals rp.PersonId
                 group p by new { p.Id, p.FirstName, p.LastName, p.PrivateNumber, rp.ConnectionType }
                 into gr
@@ -51,9 +53,9 @@ namespace DVL_TBC.Domain.Concrete
                     privateNumber = gr.Key.PrivateNumber,
                     connectionType = gr.Key.ConnectionType,
                     count = gr.Count()
-                }).ToList();
+                }).ToListAsync();
 
-            var groupedWithRelatedPersonId = (from p in _context.Persons
+            var groupedWithRelatedPersonId = await (from p in _context.Persons
                 join rp in _context.RelatedPersons on p.Id equals rp.RelatedPersonId
                 group p by new { p.Id, p.FirstName, p.LastName, p.PrivateNumber, rp.ConnectionType }
                 into gr
@@ -65,7 +67,7 @@ namespace DVL_TBC.Domain.Concrete
                     privateNumber = gr.Key.PrivateNumber,
                     connectionType = gr.Key.ConnectionType,
                     count = gr.Count()
-                }).ToList();
+                }).ToListAsync();
 
             return (from p in groupedWithRelatedPersonId.Concat(groupedWithPersonId)
                     group p by new { p.privateNumber, p.firstName, p.lastName, p.connectionType }

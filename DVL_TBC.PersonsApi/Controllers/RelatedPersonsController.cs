@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using DVL_TBC.Domain.Abstract;
 using DVL_TBC.Domain.Models;
 using DVL_TBC.PersonsApi.Models;
@@ -18,27 +19,42 @@ namespace DVL_TBC.PersonsApi.Controllers
             _relatedPersonsRepo = relatedPersonsRepo;
         }
 
+        /// <summary>
+        /// AddAsync related person in database
+        /// </summary>
+        /// <param name="relatedPersonId"></param>
+        /// <param name="personId"></param>
+        /// <param name="connectionType"></param>
+        /// <returns></returns>
         [HttpPost("Add/{relatedPersonId}")]
-        public IActionResult AddRelatedPerson(int relatedPersonId, int personId, PersonConnectionType connectionType)
+        public async Task<IActionResult> AddRelatedPerson(int relatedPersonId, int personId, PersonConnectionType connectionType)
         {
-            _relatedPersonsRepo.Add(new RelatedPerson()
+            await _relatedPersonsRepo.AddAsync(new RelatedPerson()
                 { PersonId = personId, RelatedPersonId = relatedPersonId, ConnectionType = connectionType });
             return Ok();
         }
 
+        /// <summary>
+        /// DeleteAsync related person from database
+        /// </summary>
+        /// <param name="relatedPersonId"></param>
+        /// <param name="personId"></param>
+        /// <returns></returns>
         [HttpPost("Delete/{relatedPersonId}")]
-        public IActionResult DeleteRelatedPerson(int relatedPersonId, int personId)
+        public async Task<IActionResult> DeleteRelatedPerson(int relatedPersonId, int personId)
         {
-            _relatedPersonsRepo.Delete(personId, relatedPersonId);
+            await _relatedPersonsRepo.DeleteAsync(personId, relatedPersonId);
             return Ok();
         }
 
+        /// <summary>
+        /// GetAsync report about all persons RelatedPersons Count
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("Get/RelatedPersonsReport")]
-        public ActionResult<List<RelatedPersonsCountResponse>> GetRelatedPersonsCount()
-        {
-            return Ok(_relatedPersonsRepo.GetRelatedPersonsCount().Select(rp =>
+        public async Task<ActionResult<List<RelatedPersonsCountResponse>>> GetRelatedPersonsCount() =>
+            Ok((await _relatedPersonsRepo.GetRelatedPersonsCountAsync()).Select(rp =>
                 new RelatedPersonsCountResponse(rp.privateNumber, rp.fullName, rp.connectionType,
                     rp.relatedPersonsCount)));
-        }
     }
 }

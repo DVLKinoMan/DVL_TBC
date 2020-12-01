@@ -1,28 +1,28 @@
 ﻿using DVL_TBC.Domain.Models;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DVL_TBC.Domain.Abstract
 {
     public interface IPersonsRepository
     {
-        Person Get(int personId);
+        Task<Person> GetAsync(int personId);
 
-        void Add(Person person);
+        Task AddAsync(Person person);
 
-        void Delete(int personId);
+        Task DeleteAsync(int personId);
 
-        List<Person> List(string? firstName, string? lastName, string? privateNumber, int? itemsPerPage, int? currentPageNumber);
+        Task<List<Person>> ListAsync(string? firstName, string? lastName, string? privateNumber, int? itemsPerPage, int? currentPageNumber);
 
-        List<Person> List(string? firstName, string? lastName, string? privateNumber,
+        Task<List<Person>> ListAsync(string? firstName, string? lastName, string? privateNumber,
             int? id, Gender? gender, DateTime? birthDate, int? cityId, string? cityName,
             string? profilePictureRelativePath,
             int? itemsPerPage, int? currentPageNumber);
 
-        //todo phoneNumbers maybe in another method
-        void Edit(int personId, string? firstName, string? lastName, Gender? gender, string? privateNumber,
+        Task EditAsync(int personId, string? firstName, string? lastName, Gender? gender, string? privateNumber,
             DateTime? birthDate, int? cityId, List<PhoneNumber>? phoneNumbers);
 
-        void ChangeProfilePicture(int personId, string relativePath);
+        Task ChangeProfilePictureAsync(int personId, string relativePath);
     }
 }

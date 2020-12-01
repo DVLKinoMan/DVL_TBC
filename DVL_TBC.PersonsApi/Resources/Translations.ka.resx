@@ -132,6 +132,12 @@
   <data name="ErrorMinAgeShouldBe" xml:space="preserve">
     <value>მინიმუმი ასაკი უნდა იყოს {0}</value>
   </data>
+  <data name="ErrorParameterLengthRange" xml:space="preserve">
+    <value>პარამეტრის '{0}' სიგრძე უნდა იყოს შუალედში [{1},{2]]</value>
+  </data>
+  <data name="ErrorPhoneNumberRange" xml:space="preserve">
+    <value>ტელეფონის ნომრის სიგრძე უნდა იყოს 4-დან 50 სიმბოლომდე</value>
+  </data>
   <data name="ErrorPrivateNumberLength" xml:space="preserve">
     <value>პირადი ნომრის სიგრძე უნდა იყოს {0}</value>
   </data>

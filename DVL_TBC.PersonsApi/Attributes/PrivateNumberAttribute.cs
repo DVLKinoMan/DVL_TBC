@@ -16,12 +16,15 @@ namespace DVL_TBC.PersonsApi.Attributes
         protected override ValidationResult IsValid(object value, ValidationContext validationContext) =>
             value switch
             {
-                string { } val when val.Length != _length => new ValidationResult(
+                string { } val when !HasValidLength(val, _length) => new ValidationResult(
                     string.Format(Translations.ErrorPrivateNumberLength, _length)),
-                string { } val => val.All(char.IsDigit)
-                    ? ValidationResult.Success!
+                string { } val => IsValid(val) ? ValidationResult.Success!
                     : new ValidationResult(Translations.ErrorPrivateNumberOnlyDigits),
                 _ => new ValidationResult(Translations.ErrorPrivateNumberString)
             };
+
+        public static bool IsValid(string val) => val.All(char.IsDigit);
+
+        public static bool HasValidLength(string val, int length) => val.Length == length;
     }
 }

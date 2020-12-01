@@ -16,13 +16,15 @@ namespace DVL_TBC.PersonsApi.Attributes
         protected override ValidationResult IsValid(object value, ValidationContext validationContext) =>
             value switch
             {
-                DateTime { } dateTime => CalculateAge(dateTime) >= _minAge
+                DateTime { } dateTime => IsValid(dateTime, _minAge)
                     ? ValidationResult.Success!
                     : new ValidationResult(string.Format(Translations.ErrorMinAgeShouldBe, _minAge)),
                 _ => new ValidationResult(Translations.ErrorBirthDateDateTime)
             };
 
-        private int CalculateAge(DateTime birthDate) =>
+        public static bool IsValid(DateTime birthDate, int minAge) => CalculateAge(birthDate) >= minAge;
+
+        private static int CalculateAge(DateTime birthDate) =>
             (int.Parse(DateTime.Now.ToString("yyyyMMdd")) - int.Parse(birthDate.ToString("yyyyMMdd"))) / 10_000;
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DVL_TBC.Domain.Concrete
 {
@@ -16,26 +17,26 @@ namespace DVL_TBC.Domain.Concrete
             _context = context;
         }
 
-        public Person Get(int personId)
+        public async Task<Person> GetAsync(int personId)
         {
             var person =
-                _context.Persons.Include("PhoneNumbers")
+                await _context.Persons.Include("PhoneNumbers")
                         .Include("City")
-                        .FirstOrDefault(p => p.Id == personId) switch
+                        .FirstOrDefaultAsync(p => p.Id == personId) switch
                 {
                     { } p => p,
                     _ => throw new ArgumentException("Person was not found with the given Id", nameof(personId))
                 };
 
-            var related1 = _context.RelatedPersons
+            var related1 = await _context.RelatedPersons
                 .Where(rp => rp.PersonId == personId)
                 .Select(rp => new { rp.ConnectionType, rp.Person2.PrivateNumber, rp.Person2.FirstName, rp.Person2.LastName })
-                .ToList();
+                .ToListAsync();
 
-            var related2 = _context.RelatedPersons
+            var related2 = await _context.RelatedPersons
                 .Where(rp => rp.RelatedPersonId == personId)
                 .Select(rp => new { rp.ConnectionType, rp.Person1.PrivateNumber, rp.Person1.FirstName, rp.Person1.LastName })
-                .ToList();
+                .ToListAsync();
 
             related1.AddRange(related2);
             person.RelatedPersonViewModels = related1.Select(rp =>
@@ -45,46 +46,46 @@ namespace DVL_TBC.Domain.Concrete
             return person;
         }
 
-        public void Add(Person person)
+        public async Task AddAsync(Person person)
         {
-            _context.Persons.Add(person);
+            await _context.Persons.AddAsync(person);
 
-            _context.RelatedPersons.AddRange(person.RelatedPersons.Select(rp => new RelatedPerson()
+            await _context.RelatedPersons.AddRangeAsync(person.RelatedPersons.Select(rp => new RelatedPerson()
                 {ConnectionType = rp.ConnectionType, Person1 = person, RelatedPersonId = rp.RelatedPersonId}));
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Delete(int personId) =>
-            Delete(_context.Persons.FirstOrDefault(p => p.Id == personId) switch
+        public async Task DeleteAsync(int personId) =>
+            await DeleteAsync(await _context.Persons.FirstOrDefaultAsync(p => p.Id == personId) switch
             {
                 { } p => p,
                 _ => throw new ArgumentException("Person was not found with the given Id", nameof(personId))
             });
 
-        private void Delete(Person person)
+        private async Task DeleteAsync(Person person)
         {
             _context.RelatedPersons.RemoveRange(_context.RelatedPersons.Where(rp =>
                 rp.PersonId == person.Id || rp.RelatedPersonId == person.Id));
             _context.Persons.Remove(person);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public List<Person> List(string? firstName, string? lastName, string? privateNumber, int? itemsPerPage, int? currentPageNumber)
+        public async Task<List<Person>> ListAsync(string? firstName, string? lastName, string? privateNumber, int? itemsPerPage, int? currentPageNumber)
         {
             var query = _context.Persons.Include("PhoneNumbers").Include("City").Where(p => (firstName == null || p.FirstName.Contains(firstName)) &&
                                         (lastName == null || p.LastName.Contains(lastName)) &&
                                         (privateNumber == null || p.PrivateNumber.Contains(privateNumber)));
 
             if (itemsPerPage is { } itPerPage && currentPageNumber is { } curPage)
-                return query.Skip(itPerPage * (curPage - 1))
+                return await query.Skip(itPerPage * (curPage - 1))
                     .Take(itPerPage)
-                    .ToList();
+                    .ToListAsync();
 
-            return query.ToList();
+            return await query.ToListAsync();
         }
 
-        public List<Person> List(string? firstName, string? lastName, string? privateNumber,
+        public async Task<List<Person>> ListAsync(string? firstName, string? lastName, string? privateNumber,
             int? id, Gender? gender, DateTime? birthDate, int? cityId, string? cityName,
             string? profilePictureRelativePath, int? itemsPerPage, int? currentPageNumber)
         {
@@ -102,17 +103,17 @@ namespace DVL_TBC.Domain.Concrete
             );
 
             if (itemsPerPage is { } itPerPage && currentPageNumber is { } curPage)
-                return query.Skip(itPerPage * (curPage - 1))
+                return await query.Skip(itPerPage * (curPage - 1))
                     .Take(itPerPage)
-                    .ToList();
+                    .ToListAsync();
 
-            return query.ToList();
+            return await query.ToListAsync();
         }
 
-        public void Edit(int personId, string? firstName, string? lastName, Gender? gender, string? privateNumber, DateTime? birthDate,
+        public async Task EditAsync(int personId, string? firstName, string? lastName, Gender? gender, string? privateNumber, DateTime? birthDate,
             int? cityId, List<PhoneNumber>? phoneNumbers)
         {
-            var person = _context.Persons.FirstOrDefault(p => p.Id == personId) switch
+            var person = await _context.Persons.FirstOrDefaultAsync(p => p.Id == personId) switch
             {
                 { } p => p,
                 _ => throw new ArgumentException("Person was not found with the given Id", nameof(personId))
@@ -131,23 +132,21 @@ namespace DVL_TBC.Domain.Concrete
             if (cityId != null)
                 person.CityId = cityId;
             if (phoneNumbers != null)
-            {
-                //todo change phoneNumbers
-            }
+                person.PhoneNumbers = phoneNumbers;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void ChangeProfilePicture(int personId, string relativePath)
+        public async Task ChangeProfilePictureAsync(int personId, string relativePath)
         {
-            var person = _context.Persons.FirstOrDefault(p => p.Id == personId) switch
+            var person = await _context.Persons.FirstOrDefaultAsync(p => p.Id == personId) switch
             {
                 { } p => p,
                 _ => throw new ArgumentException("Person was not found with the given Id", nameof(personId))
             };
 
             person.ProfilePictureRelativePath = relativePath;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }
