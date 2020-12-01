@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DVL_TBC.Domain.Resources;
 using Microsoft.EntityFrameworkCore;
 
 namespace DVL_TBC.Domain.Concrete
@@ -30,8 +31,8 @@ namespace DVL_TBC.Domain.Concrete
                     (rp.PersonId == relatedPersonId && rp.RelatedPersonId == personId)) switch
                 {
                     { } rp => rp,
-                    _ => throw new ArgumentException(
-                        $"RelatedPerson was not found with the given {nameof(personId)} and {nameof(relatedPersonId)}")
+                    _ => throw new ArgumentException(string.Format(Translations.ErroRelatedPersonWasNotFound,
+                        nameof(personId), nameof(relatedPersonId)))
                 };
 
             _context.RelatedPersons.Remove(relatedPerson);

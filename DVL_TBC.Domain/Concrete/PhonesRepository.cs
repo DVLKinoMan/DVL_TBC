@@ -3,6 +3,7 @@ using DVL_TBC.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
+using DVL_TBC.Domain.Resources;
 
 namespace DVL_TBC.Domain.Concrete
 {
@@ -27,7 +28,7 @@ namespace DVL_TBC.Domain.Concrete
                 await _context.PhoneNumbers.FirstOrDefaultAsync(ph => personId == ph.PersonId && ph.Number == number) switch
                 {
                     { } p => p,
-                    _ => throw new ArgumentException("PhoneNumber was not found with the given PersonId and Number")
+                    _ => throw new ArgumentException(Translations.ErrorPhoneNumberNotFound)
                 };
 
             _context.PhoneNumbers.Remove(phoneNumb);

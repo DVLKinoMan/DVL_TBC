@@ -12,7 +12,7 @@ namespace DVL_TBC.PersonsApi.Extensions
             string defaultLanguage = "en-US")
             => app.Use((context, next) =>
             {
-                var allowedLanguages = new[] {"en-US", "ka-GE"};
+                var allowedLanguages = new[] {"ka", "en-US", "ka-GE"};
                 var language = context.Request.Headers["Accept-Language"].ToString().Split(',').FirstOrDefault();
                 language = allowedLanguages.Contains(language) ? language : defaultLanguage;
 

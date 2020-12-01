@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DVL_TBC.Domain.Resources;
 
 namespace DVL_TBC.Domain.Concrete
 {
@@ -25,7 +26,7 @@ namespace DVL_TBC.Domain.Concrete
                         .FirstOrDefaultAsync(p => p.Id == personId) switch
                 {
                     { } p => p,
-                    _ => throw new ArgumentException("Person was not found with the given Id", nameof(personId))
+                    _ => throw new ArgumentException(Translations.ErrorPersonNotFoundWithId, nameof(personId))
                 };
 
             var related1 = await _context.RelatedPersons
@@ -61,7 +62,7 @@ namespace DVL_TBC.Domain.Concrete
             await DeleteAsync(await _context.Persons.FirstOrDefaultAsync(p => p.Id == personId) switch
             {
                 { } p => p,
-                _ => throw new ArgumentException("Person was not found with the given Id", nameof(personId))
+                _ => throw new ArgumentException(Translations.ErrorPersonNotFoundWithId, nameof(personId))
             });
 
         private async Task DeleteAsync(Person person)
@@ -117,7 +118,7 @@ namespace DVL_TBC.Domain.Concrete
             var person = await _context.Persons.FirstOrDefaultAsync(p => p.Id == personId) switch
             {
                 { } p => p,
-                _ => throw new ArgumentException("Person was not found with the given Id", nameof(personId))
+                _ => throw new ArgumentException(Translations.ErrorPersonNotFoundWithId, nameof(personId))
             };
 
             if (firstName != null)
@@ -143,7 +144,7 @@ namespace DVL_TBC.Domain.Concrete
             var person = await _context.Persons.FirstOrDefaultAsync(p => p.Id == personId) switch
             {
                 { } p => p,
-                _ => throw new ArgumentException("Person was not found with the given Id", nameof(personId))
+                _ => throw new ArgumentException(Translations.ErrorPersonNotFoundWithId, nameof(personId))
             };
 
             person.ProfilePictureRelativePath = relativePath;
