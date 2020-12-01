@@ -8,13 +8,14 @@ namespace DVL_TBC.PersonsApi.Extensions
 {
     public static class ApiMiddlewares
     {
+        public static string[] AllowedLanguages = {"ka", "en-US", "ka-GE"};
+
         public static IApplicationBuilder UseAcceptLanguageHeader(this IApplicationBuilder app,
             string defaultLanguage = "en-US")
             => app.Use((context, next) =>
             {
-                var allowedLanguages = new[] {"ka", "en-US", "ka-GE"};
                 var language = context.Request.Headers["Accept-Language"].ToString().Split(',').FirstOrDefault();
-                language = allowedLanguages.Contains(language) ? language : defaultLanguage;
+                language = AllowedLanguages.Contains(language) ? language : defaultLanguage;
 
                 Thread.CurrentThread.CurrentCulture =
                     new System.Globalization.CultureInfo(language! ?? throw new InvalidOperationException());
